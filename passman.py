@@ -2,8 +2,10 @@ import os
 import gnupg
 import typer
 import string
-import secrets
 import errors
+import secrets
+from typing import List
+from pathlib import Path
 from typing_extensions import Annotated
 
 HOME_DIR = os.path.expanduser("~")
@@ -37,7 +39,7 @@ def is_initialized():
     """
     Returns if vault is initialized
     """
-    return os.path.exists(PASSMAN_DIR)
+    return os.path.exists(PASSMAN_DIR) and os.path.exists(os.path.join(PASSMAN_DIR, ".gpg_id"))
 
 def create_entry(login, password, gpg_id):
     """
@@ -50,16 +52,19 @@ def create_entry(login, password, gpg_id):
     )
 
 @app.command()
-def init(gpg_id: str):
+def init(gpg_id: List[Path]):
     """
     Initializes PassMan vault
     """
 
-    os.makedirs(PASSMAN_DIR)
-    with open(os.path.join(PASSMAN_DIR, ".gpg_id"), "w") as f:
-        f.write(gpg_id)
+    ids = [id.name for id in gpg_id]
+    if not os.path.exists(PASSMAN_DIR): os.makedirs(PASSMAN_DIR)
 
-    print(f"Vault initialized for {gpg_id}, it can be found at {PASSMAN_DIR}")
+    with open(os.path.join(PASSMAN_DIR, ".gpg_id"), "w") as f:
+        for id in ids:
+            f.write(id + "\n")
+            
+    print(f"Vault initialized for {' '.join(ids)}, it can be found at {PASSMAN_DIR}")
 
 @app.command()
 def insert(

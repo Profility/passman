@@ -15,8 +15,9 @@ about the commands you can use!
 
 
 ## To-Do:
-- [ ] Improve 'init' command and handling IDs
+- [ ] Add folder support for entries
 - [ ] Prettify interface
 - [ ] Make it a package
+- [x] Improve 'init' command and handling IDs
 - [x] Implement 'generate' and 'list' command
 - [x] Error handling class
