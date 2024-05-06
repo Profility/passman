@@ -33,7 +33,7 @@ def get_gpg_id():
     """
     if not os.path.exists(GPG_ID): errors.GPGIdNotFound()
     with open(GPG_ID, "r") as f:
-        return f.read()
+        return f.read().splitlines()
     
 def is_initialized():
     """
@@ -63,7 +63,7 @@ def init(gpg_id: List[Path]):
     with open(os.path.join(PASSMAN_DIR, ".gpg_id"), "w") as f:
         for id in ids:
             f.write(id + "\n")
-            
+
     print(f"Vault initialized for {' '.join(ids)}, it can be found at {PASSMAN_DIR}")
 
 @app.command()
