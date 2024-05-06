@@ -54,7 +54,6 @@ def init(gpg_id: str):
     """
     Initializes PassMan vault
     """
-    if is_initialized(): errors.AlreadyInitialized()
 
     os.makedirs(PASSMAN_DIR)
     with open(os.path.join(PASSMAN_DIR, ".gpg_id"), "w") as f:

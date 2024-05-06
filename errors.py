@@ -16,11 +16,6 @@ def NotInitialized():
 
     PassManError("Passman vault not initialized, please run `passman init`")
 
-def AlreadyInitialized():
-    """If passman vault is already initialized"""
-
-    PassManError("Passman vault already initialized, exiting...")
-
 def EntryNotFound(entry):
     """If login entry is not found"""
 
