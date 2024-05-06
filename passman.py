@@ -1,7 +1,9 @@
 import os
-import sys
 import gnupg
 import typer
+import string
+import secrets
+import errors
 from typing_extensions import Annotated
 
 HOME_DIR = os.path.expanduser("~")
@@ -11,22 +13,48 @@ GPG_ID = os.path.join(PASSMAN_DIR, ".gpg_id")
 gpg = gnupg.GPG()
 app = typer.Typer()
 
-def get_entry_path(entry):
+def get_entry_path(entry) -> bool:
+    """
+    Get login entry path
+    """
     return os.path.join(PASSMAN_DIR, entry+".gpg")
 
 def entry_exists(entry):
+    """
+    Returns if login entry exists
+    """
     return os.path.exists(get_entry_path(entry))
 
 def get_gpg_id():
+    """
+    Returns all GPG Ids within .gpg_id file
+    """
+    if not os.path.exists(GPG_ID): errors.GPGIdNotFound()
     with open(GPG_ID, "r") as f:
         return f.read()
+    
+def is_initialized():
+    """
+    Returns if vault is initialized
+    """
+    return os.path.exists(PASSMAN_DIR)
+
+def create_entry(login, password, gpg_id):
+    """
+    Creates a new entry
+    """
+    gpg.encrypt(
+        data=password,
+        recipients=gpg_id,
+        output=os.path.join(PASSMAN_DIR, login+".gpg")
+    )
 
 @app.command()
 def init(gpg_id: str):
     """
     Initializes PassMan vault
     """
-    if os.path.exists(PASSMAN_DIR): print("Vault already initialized, exiting...") & sys.exit(1)
+    if is_initialized(): errors.AlreadyInitialized()
 
     os.makedirs(PASSMAN_DIR)
     with open(os.path.join(PASSMAN_DIR, ".gpg_id"), "w") as f:
@@ -45,64 +73,72 @@ def insert(
     gpg_id = get_gpg_id()
     entry = get_entry_path(login)
 
-    if entry_exists(login):
-        overwrite_entry = input(f"An entry already exists for {login}. Overwrite it? [y/N]: ")
-        if overwrite_entry.lower() == "n":
-            sys.exit(0)
+    if entry_exists(login): errors.EntryAlreadyExists(login)
 
-    gpg.encrypt(password, gpg_id, output=entry)
-    gpg.encrypt(
-        data=password,
-        recipients=gpg_id,
-        output=entry,
-        armor=True
-    )
+    create_entry(login, password, gpg_id)
 
-    print("Password generated at %s", entry)
-    ...
+    print("Added existing password at ", entry)
 
 @app.command()
-def view(
+def generate(
     login: str,
-    passphrase: Annotated[str, typer.Option(prompt=True, hide_input=True)]):
+    length: Annotated[int, typer.Argument()] = 16):
+    """
+    Generate new login to vault
+    """
+    entry = get_entry_path(login)
+
+    if entry_exists(login): errors.EntryAlreadyExists(login)
+    
+    gpg_id = get_gpg_id()
+    characters = string.ascii_letters + string.digits + string.punctuation
+    password = ''.join(secrets.choice(characters) for _ in range(length))
+
+    create_entry(login, password, gpg_id)
+    print(f"The generated password for {entry} is {password}")
+
+@app.command()
+def view(login: str):
     """
     View specific login from vault
     """
-    if not entry_exists(login): print(f"Entry {login} not found, exiting...") & sys.exit(1)
-    if not gpg.is_valid_passphrase(passphrase): print("Invalid passphrase, exiting...") & sys.exit(1)
+    if not is_initialized(): errors.NotInitialized()
+    if not entry_exists(login): errors.EntryNotFound(login)
 
-    with open(get_entry_path(login), "r") as f:
-        password = gpg.decrypt(
-            message=f.read(),
-            passphrase=passphrase
-        )
-        print(f"Login: {login}\nPassword: {password}")
-    ...
+    password = gpg.decrypt_file(get_entry_path(login))
+    if password == None:
+        errors.DecryptionError()
+
+    print(f"Login: {login}\nPassword: {password}")
 
 @app.command()
 def remove(login: str):
     """
     Remove existing passwords from vault
     """
-    if not entry_exists(login): print(f"Entry {login} not found, exiting...") & sys.exit(1)
-    confirmation = input(f"Are you sure you want to remove the {login} entry? [y/N]: ")
-    if confirmation.lower() == "y":
-        os.remove(get_entry_path(login))
-    ...
+    if not is_initialized(): errors.NotInitialized()
+    if not entry_exists(login): errors.EntryNotFound(login)
+
+    errors.EntryAlreadyExists(login)
+
+    os.remove(get_entry_path(login))
+    print(f"Removed {login} entry")
 
 @app.command()
-def generate(login: str, length: int = 16):
-    """
-    Generate new login to vault
-    """
-    ...
-
-@app.command()
-def list(login: str):
+def list():
     """
     List all passwords from vault
     """
-    ...
+    if not is_initialized(): errors.NotInitialized()
+
+    for item in os.listdir(PASSMAN_DIR):
+        current_item = os.path.join(PASSMAN_DIR, item)
+        if os.path.isdir(current_item):
+            print(item)
+            for sub_item in os.listdir(current_item):
+                print(f"└── {sub_item}")
+        elif os.path.isfile(current_item) and item.endswith(".gpg"):
+            print(item)
 
 if __name__ == "__main__":
     app()
