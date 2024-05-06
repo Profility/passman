@@ -26,10 +26,13 @@ def init(gpg_id: str):
     """
     Initializes PassMan vault
     """
-    if os.path.exists(PASSMAN_DIR): print("Vault already initialized, exiting...") and sys.exit(1)
-    os.makedirs(PASSMAN_DIR)
-    with open(os.path.join(PASSMAN_DIR, ".gpg_id"), "w") as f:
-        f.write(gpg_id)
+    if os.path.exists(PASSMAN_DIR): 
+        print("Vault already initialized, exiting...")
+        sys.exit(1)
+    else:
+        os.makedirs(PASSMAN_DIR)
+        with open(os.path.join(PASSMAN_DIR, ".gpg_id"), "w") as f:
+            f.write(gpg_id)
 
     print(f"Vault initialized for {gpg_id}, it can be found at {PASSMAN_DIR}")
 
