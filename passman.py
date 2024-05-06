@@ -21,13 +21,13 @@ def get_entry_path(entry) -> bool:
     """
     return os.path.join(PASSMAN_DIR, entry+".gpg")
 
-def entry_exists(entry):
+def entry_exists(entry) -> bool:
     """
     Returns if login entry exists
     """
     return os.path.exists(get_entry_path(entry))
 
-def get_gpg_id():
+def get_gpg_id() -> List[str]:
     """
     Returns all GPG Ids within .gpg_id file
     """
@@ -35,7 +35,7 @@ def get_gpg_id():
     with open(GPG_ID, "r") as f:
         return f.read().splitlines()
     
-def is_initialized():
+def is_initialized() -> bool:
     """
     Returns if vault is initialized
     """
