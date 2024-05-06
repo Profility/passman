@@ -26,13 +26,11 @@ def init(gpg_id: str):
     """
     Initializes PassMan vault
     """
-    if os.path.exists(PASSMAN_DIR): 
-        print("Vault already initialized, exiting...")
-        sys.exit(1)
-    else:
-        os.makedirs(PASSMAN_DIR)
-        with open(os.path.join(PASSMAN_DIR, ".gpg_id"), "w") as f:
-            f.write(gpg_id)
+    if os.path.exists(PASSMAN_DIR): print("Vault already initialized, exiting...") & sys.exit(1)
+
+    os.makedirs(PASSMAN_DIR)
+    with open(os.path.join(PASSMAN_DIR, ".gpg_id"), "w") as f:
+        f.write(gpg_id)
 
     print(f"Vault initialized for {gpg_id}, it can be found at {PASSMAN_DIR}")
 
@@ -70,8 +68,8 @@ def view(
     """
     View specific login from vault
     """
-    if not entry_exists(login): print(f"Entry {login} not found, exiting...") and sys.exit(1)
-    if not gpg.is_valid_passphrase(passphrase): print("Invalid passphrase, exiting...") and sys.exit(1)
+    if not entry_exists(login): print(f"Entry {login} not found, exiting...") & sys.exit(1)
+    if not gpg.is_valid_passphrase(passphrase): print("Invalid passphrase, exiting...") & sys.exit(1)
 
     with open(get_entry_path(login), "r") as f:
         password = gpg.decrypt(
@@ -86,7 +84,7 @@ def remove(login: str):
     """
     Remove existing passwords from vault
     """
-    if not entry_exists(login): print(f"Entry {login} not found, exiting...") and sys.exit(1)
+    if not entry_exists(login): print(f"Entry {login} not found, exiting...") & sys.exit(1)
     confirmation = input(f"Are you sure you want to remove the {login} entry? [y/N]: ")
     if confirmation.lower() == "y":
         os.remove(get_entry_path(login))
