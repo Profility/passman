@@ -31,7 +31,7 @@ def EntryAlreadyExists(entry):
 
     PassManConfirmation(f"Entry '{entry}' already exists, overwrite?")
 
-def DecryptionError():
+def DecryptionError(status):
     """If decryption fails"""
 
-    PassManError("Decryption failed; probably due to wrong passphrase, exiting...")
+    PassManError(f"Decryption failed; {status}, exiting...")
