@@ -110,10 +110,9 @@ def view(login: str):
     if not entry_exists(login): errors.EntryNotFound(login)
 
     password = gpg.decrypt_file(get_entry_path(login))
-    if password == None:
-        errors.DecryptionError()
-
-    print(f"Login: {login}\nPassword: {password}")
+    if not password.ok: errors.DecryptionError(password.status)
+    
+    print(f"Login: {login}\nPassword: {password.data.decode()}")
 
 @app.command()
 def remove(login: str):
