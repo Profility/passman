@@ -19,10 +19,10 @@ about the commands you can use!
 
 
 ## To-Do:
-- [ ] Add folder support for entries
 - [ ] Prettify interface
 - [ ] Make it a package
 - [ ] Add metadata support
+- [x] Add folder support for entries
 - [x] Improve 'init' command and handling IDs
 - [x] Implement 'generate' and 'list' command
 - [x] Error handling class
