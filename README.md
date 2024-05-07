@@ -18,6 +18,7 @@ about the commands you can use!
 - [ ] Add folder support for entries
 - [ ] Prettify interface
 - [ ] Make it a package
+- [ ] Add metadata support
 - [x] Improve 'init' command and handling IDs
 - [x] Implement 'generate' and 'list' command
 - [x] Error handling class
