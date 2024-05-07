@@ -4,8 +4,8 @@
 You interact with PassMan from the terminal, give it a password and it encrypts it with GPG and gets stored locally safely in your computer, you decrypt it with your GPG passphrase, simple enough right?
 
 ## Dependencies:
-[GNUPG](https://gnupg.org/download/index.html) - used for en & de-crypting
-[typer](https://typer.tiangolo.com/) - used for the CLI interface
+- [GNUPG](https://gnupg.org/download/index.html) - used for encrypting & decrypting your passwords
+- [typer](https://typer.tiangolo.com/) - used for the CLI interface
 
 ## Usage:
 Start by initializing the passman vault by running `py passman.py init`
