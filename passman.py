@@ -45,11 +45,11 @@ def create_entry(login, password, gpg_id):
     """
     Creates a new entry
     """
+
     if "/" in login:
-        login_path = login.split("/")
-        if len(login_path) == 2:
-            folder = os.path.join(PASSMAN_DIR, login_path[0])
-            if not os.path.exists(folder): os.makedirs(folder)
+        folders = os.path.join(PASSMAN_DIR, os.path.dirname(login))
+        if not os.path.exists(folders):
+            os.makedirs((folders), exist_ok=True)
 
     gpg.encrypt(
         data=password,
