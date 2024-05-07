@@ -57,6 +57,12 @@ def create_entry(login, password, gpg_id):
         output=os.path.join(PASSMAN_DIR, login+".gpg")
     )
 
+def get_entry(login):
+    password = gpg.decrypt_file(get_entry_path(login))
+    if not password.ok: errors.DecryptionError(password.status)
+
+    return password
+
 @app.command()
 def init(gpg_id: List[Path]):
     """
@@ -115,8 +121,7 @@ def view(login: str):
     if not is_initialized(): errors.NotInitialized()
     if not entry_exists(login): errors.EntryNotFound(login)
 
-    password = gpg.decrypt_file(get_entry_path(login))
-    if not password.ok: errors.DecryptionError(password.status)
+    password = get_entry(login)
     
     print(f"Login: {login}\nPassword: {password.data.decode()}")
 
