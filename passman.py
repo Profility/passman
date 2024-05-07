@@ -133,8 +133,6 @@ def remove(login: str):
     if not is_initialized(): errors.NotInitialized()
     if not entry_exists(login): errors.EntryNotFound(login)
 
-    errors.EntryAlreadyExists(login)
-
     os.remove(get_entry_path(login))
     print(f"Removed {login} entry")
 
