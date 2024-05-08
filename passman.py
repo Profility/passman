@@ -15,62 +15,65 @@ GPG_ID = os.path.join(PASSMAN_DIR, ".gpg_id")
 gpg = gnupg.GPG()
 app = typer.Typer()
 
-def get_entry_path(entry) -> bool:
-    """
-    Get login entry path
-    """
-    return os.path.join(PASSMAN_DIR, entry+".gpg")
+class PassMan:
+    @staticmethod
+    def get_entry_path(entry: str) -> bool:
+        """Get login entry path"""
 
-def entry_exists(entry) -> bool:
-    """
-    Returns if login entry exists
-    """
-    return os.path.exists(get_entry_path(entry))
+        return os.path.join(PASSMAN_DIR, entry+".gpg")
 
-def get_gpg_id() -> List[str]:
-    """
-    Returns all GPG Ids within .gpg_id file
-    """
-    if not os.path.exists(GPG_ID): errors.GPGIdNotFound()
-    with open(GPG_ID, "r") as f:
-        return f.read().splitlines()
-    
-def is_initialized() -> bool:
-    """
-    Returns if vault is initialized
-    """
-    return os.path.exists(PASSMAN_DIR) and os.path.exists(os.path.join(PASSMAN_DIR, ".gpg_id"))
+    @staticmethod
+    def entry_exists(entry: str) -> bool:
+        """Returns if login entry exists"""
 
-def create_entry(login, password, gpg_id):
-    """
-    Creates a new entry
-    """
+        return os.path.exists(PassMan.get_entry_path(entry))
 
-    if "/" in login:
-        folders = os.path.join(PASSMAN_DIR, os.path.dirname(login))
-        if not os.path.exists(folders):
-            os.makedirs((folders), exist_ok=True)
+    @staticmethod
+    def get_gpg_id() -> List[str]:
+        """Returns all GPG Ids within .gpg_id file"""
 
-    gpg.encrypt(
-        data=password,
-        recipients=gpg_id,
-        output=os.path.join(PASSMAN_DIR, login+".gpg")
-    )
+        if not os.path.exists(GPG_ID): 
+            raise errors.GPGIdNotFound()
+        
+        with open(GPG_ID, "r") as f:
+            return f.read().splitlines()
+        
+    @staticmethod
+    def is_initialized() -> bool:
+        """Returns if vault is initialized"""
 
-def get_entry(login):
-    password = gpg.decrypt_file(get_entry_path(login))
-    if not password.ok: errors.DecryptionError(password.status)
+        return os.path.exists(PASSMAN_DIR) and os.path.exists(os.path.join(PASSMAN_DIR, ".gpg_id"))
 
-    return password
+    @staticmethod
+    def create_entry(login: str, password: str, gpg_id: List[str]):
+        """Creates a new entry"""
+
+        if "/" in login:
+            folders = os.path.join(PASSMAN_DIR, os.path.dirname(login))
+            if not os.path.exists(folders):
+                os.makedirs((folders), exist_ok=True)
+
+        gpg.encrypt(
+            data=password,
+            recipients=gpg_id,
+            output=os.path.join(PASSMAN_DIR, login+".gpg")
+        )
+
+    @staticmethod
+    def get_entry(login: str):
+        password = gpg.decrypt_file(PassMan.get_entry_path(login))
+        if not password.ok: 
+            raise errors.DecryptionError(password.status)
+
+        return password
 
 @app.command()
 def init(gpg_id: List[Path]):
-    """
-    Initializes PassMan vault
-    """
+    """Initializes PassMan vault"""
 
     ids = [id.name for id in gpg_id]
-    if not os.path.exists(PASSMAN_DIR): os.makedirs(PASSMAN_DIR)
+    if not os.path.exists(PASSMAN_DIR): 
+        os.makedirs(PASSMAN_DIR)
 
     with open(os.path.join(PASSMAN_DIR, ".gpg_id"), "w") as f:
         for id in ids:
@@ -82,16 +85,15 @@ def init(gpg_id: List[Path]):
 def insert(
     login: str,
     password: Annotated[str, typer.Option(prompt=True, confirmation_prompt=True, hide_input=True)]):
-    """
-    Add existing passwords to vault
-    """
+    """Add existing passwords to vault"""
 
-    gpg_id = get_gpg_id()
-    entry = get_entry_path(login)
+    gpg_id = PassMan.get_gpg_id()
+    entry = PassMan.get_entry_path(login)
 
-    if entry_exists(login): errors.EntryAlreadyExists(login)
+    if PassMan.entry_exists(login):
+        raise errors.EntryAlreadyExists(login)
 
-    create_entry(login, password, gpg_id)
+    PassMan.create_entry(login, password, gpg_id)
 
     print("Added existing password at ", entry)
 
@@ -99,49 +101,50 @@ def insert(
 def generate(
     login: str,
     length: Annotated[int, typer.Argument()] = 16):
-    """
-    Generate new login to vault
-    """
-    entry = get_entry_path(login)
+    """Generate new login to vault"""
 
-    if entry_exists(login): errors.EntryAlreadyExists(login)
+    entry = PassMan.get_entry_path(login)
+
+    if PassMan.entry_exists(login): 
+        raise errors.EntryAlreadyExists(login)
     
-    gpg_id = get_gpg_id()
+    gpg_id = PassMan.get_gpg_id()
     characters = string.ascii_letters + string.digits + string.punctuation
     password = ''.join(secrets.choice(characters) for _ in range(length))
 
-    create_entry(login, password, gpg_id)
+    PassMan.create_entry(login, password, gpg_id)
     print(f"The generated password for {entry} is {password}")
 
 @app.command()
 def view(login: str):
-    """
-    View specific login from vault
-    """
-    if not is_initialized(): errors.NotInitialized()
-    if not entry_exists(login): errors.EntryNotFound(login)
+    """View specific login from vault"""
 
-    password = get_entry(login)
+    if not PassMan.is_initialized(): 
+        raise errors.NotInitialized()
+    if not PassMan.entry_exists(login): 
+        raise errors.EntryNotFound(login)
+
+    password = PassMan.get_entry(login)
     
     print(f"Login: {login}\nPassword: {password.data.decode()}")
 
 @app.command()
 def remove(login: str):
-    """
-    Remove existing passwords from vault
-    """
-    if not is_initialized(): errors.NotInitialized()
-    if not entry_exists(login): errors.EntryNotFound(login)
+    """Remove existing passwords from vault"""
 
-    os.remove(get_entry_path(login))
+    if not PassMan.is_initialized(): 
+        raise errors.NotInitialized()
+    if not PassMan.entry_exists(login): 
+        raise errors.EntryNotFound(login)
+
+    os.remove(PassMan.get_entry_path(login))
     print(f"Removed {login} entry")
 
 @app.command()
 def list():
-    """
-    List all passwords from vault
-    """
-    if not is_initialized(): errors.NotInitialized()
+    """List all passwords from vault"""
+
+    if not PassMan.is_initialized(): errors.NotInitialized()
 
     for item in os.listdir(PASSMAN_DIR):
         current_item = os.path.join(PASSMAN_DIR, item)
