@@ -4,6 +4,8 @@ import typer
 import string
 import errors
 import secrets
+import tempfile
+import subprocess
 from typing import List
 from pathlib import Path
 from typing_extensions import Annotated
@@ -27,6 +29,12 @@ class PassMan:
         """Returns if login entry exists"""
 
         return os.path.exists(PassMan.get_entry_path(entry))
+    
+    @staticmethod
+    def get_file_content(file: Path) -> str:
+        """Returns file contents"""
+        with open(file, "r") as f:
+            return f.read()
 
     @staticmethod
     def get_gpg_id() -> List[str]:
@@ -35,8 +43,8 @@ class PassMan:
         if not os.path.exists(GPG_ID): 
             raise errors.GPGIdNotFound()
         
-        with open(GPG_ID, "r") as f:
-            return f.read().splitlines()
+
+        return PassMan.get_file_content(GPG_ID).splitlines()
         
     @staticmethod
     def is_initialized() -> bool:
@@ -82,7 +90,7 @@ def init(gpg_id: List[Path]):
     print(f"Vault initialized for {' '.join(ids)}, it can be found at {PASSMAN_DIR}")
 
 @app.command()
-def insert(
+def add(
     login: str,
     password: Annotated[str, typer.Option(prompt=True, confirmation_prompt=True, hide_input=True)]):
     """Add existing passwords to vault"""
@@ -139,6 +147,32 @@ def remove(login: str):
 
     os.remove(PassMan.get_entry_path(login))
     print(f"Removed {login} entry")
+
+@app.command()
+def edit(login: str):
+    """Edit specific entry content"""
+
+    if not PassMan.is_initialized(): 
+        raise errors.NotInitialized()
+    if not PassMan.entry_exists(login): 
+        raise errors.EntryNotFound(login)
+    
+    password = PassMan.get_entry(login)
+    gpg_id = PassMan.get_gpg_id()
+    
+    with tempfile.NamedTemporaryFile(mode="w", delete = False) as changes_file:
+        changes_file.write(password.data.decode())
+
+    try:
+        process = subprocess.Popen(["notepad.exe", changes_file.name])
+        process.wait()
+
+        changes = PassMan.get_file_content(changes_file.name)
+        PassMan.create_entry(login, changes, gpg_id)
+
+        print(f"Edited {login} entry")
+    finally:
+        os.remove(changes_file.name)
 
 @app.command()
 def list():

@@ -19,9 +19,10 @@ about the commands you can use!
 
 
 ## To-Do:
+- [ ] Using vim or nano when editing
 - [ ] Prettify interface
 - [ ] Make it a package
-- [ ] Add metadata support
+- [x] Add metadata support
 - [x] Add folder support for entries
 - [x] Improve 'init' command and handling IDs
 - [x] Implement 'generate' and 'list' command
