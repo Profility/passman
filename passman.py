@@ -19,7 +19,7 @@ app = typer.Typer()
 
 class PassMan:
     @staticmethod
-    def get_entry_path(entry: str) -> str:
+    def get_entry_path(entry: str) -> bool:
         """Get login entry path"""
 
         return os.path.join(PASSMAN_DIR, entry+".gpg")
@@ -43,6 +43,7 @@ class PassMan:
         if not os.path.exists(GPG_ID): 
             raise errors.GPGIdNotFound()
         
+
         return PassMan.get_file_content(GPG_ID).splitlines()
         
     @staticmethod
@@ -143,15 +144,8 @@ def remove(login: str):
         raise errors.NotInitialized()
     if not PassMan.entry_exists(login): 
         raise errors.EntryNotFound(login)
-    
-    entry = PassMan.get_entry_path(login)
-    os.remove(entry)
-    if "/" in login:
-        folder = entry.split("/")[0]
-        if len(os.listdir(folder)) == 0:
-            os.rmdir(folder)
-            print(f"Removed {folder} folder")
-        
+
+    os.remove(PassMan.get_entry_path(login))
     print(f"Removed {login} entry")
 
 @app.command()
