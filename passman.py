@@ -98,7 +98,7 @@ def add(
     entry = PassMan.get_entry_path(login)
 
     if PassMan.entry_exists(login):
-        raise errors.EntryAlreadyExists(login)
+        errors.EntryAlreadyExists(login)
 
     PassMan.create_entry(login, password, gpg_id)
 
@@ -113,7 +113,7 @@ def generate(
     entry = PassMan.get_entry_path(login)
 
     if PassMan.entry_exists(login): 
-        raise errors.EntryAlreadyExists(login)
+        errors.EntryAlreadyExists(login)
     
     gpg_id = PassMan.get_gpg_id()
     characters = string.ascii_letters + string.digits + string.punctuation
