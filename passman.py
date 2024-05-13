@@ -136,7 +136,7 @@ def view(login: str):
     print(f"Login: {login}\nPassword: {password.data.decode()}")
 
 @app.command()
-def remove(login: str):
+def rm(login: str):
     """Remove existing passwords from vault"""
 
     if not PassMan.is_initialized(): 
@@ -174,25 +174,26 @@ def edit(login: str):
         os.remove(changes_file.name)
 
 @app.command()
-def list():
+def ls():
     """List all passwords from vault"""
 
     if not PassMan.is_initialized(): 
         errors.NotInitialized()
 
     for root, dirs, files in os.walk(PASSMAN_DIR):
-        if not root.endswith(".passman"):
-            indent_level = root.replace(PASSMAN_DIR, "").count(os.sep)
-            indentation = " " * 2 * indent_level
+        indent_level = root.replace(PASSMAN_DIR, "").count(os.sep)
+        indentation = " " * 2 * indent_level
+        base_root_name = os.path.basename(root)
 
-            if indent_level < 2:
-                print(f'{os.path.basename(root)}/')
-            else:
-                print(f'{indentation}{os.path.basename(root)}/')
+        if indent_level < 2:
+            if not base_root_name == ".passman":
+                print(f'[{base_root_name}]')
+        else:
+            print(f'{indentation}[{base_root_name}]')
 
-            for file in files:
-                if not file == ".gpg_id": 
-                    print(f'{indentation}└──{os.path.basename(file)}')
+        for file in files:
+            if not file == ".gpg_id" and file.endswith(".gpg"): 
+                print(f'{indentation} => {os.path.basename(file).split(".gpg")[0]}')
 
 if __name__ == "__main__":
     app()
