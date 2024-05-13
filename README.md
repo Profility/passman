@@ -22,6 +22,7 @@ about the commands you can use!
 - [ ] Using vim or nano when editing
 - [ ] Prettify interface
 - [ ] Make it a package
+- [x] 'List' cmd shows nested folders/files
 - [x] Add metadata support
 - [x] Add folder support for entries
 - [x] Improve 'init' command and handling IDs

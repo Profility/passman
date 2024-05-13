@@ -177,16 +177,22 @@ def edit(login: str):
 def list():
     """List all passwords from vault"""
 
-    if not PassMan.is_initialized(): errors.NotInitialized()
+    if not PassMan.is_initialized(): 
+        errors.NotInitialized()
 
-    for item in os.listdir(PASSMAN_DIR):
-        current_item = os.path.join(PASSMAN_DIR, item)
-        if os.path.isdir(current_item):
-            print(item)
-            for sub_item in os.listdir(current_item):
-                print(f"└── {sub_item}")
-        elif os.path.isfile(current_item) and item.endswith(".gpg"):
-            print(item)
+    for root, dirs, files in os.walk(PASSMAN_DIR):
+        if not root.endswith(".passman"):
+            indent_level = root.replace(PASSMAN_DIR, "").count(os.sep)
+            indentation = " " * 2 * indent_level
+
+            if indent_level < 2:
+                print(f'{os.path.basename(root)}/')
+            else:
+                print(f'{indentation}{os.path.basename(root)}/')
+
+            for file in files:
+                if not file == ".gpg_id": 
+                    print(f'{indentation}└──{os.path.basename(file)}')
 
 if __name__ == "__main__":
     app()
