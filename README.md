@@ -3,26 +3,28 @@
 
 You interact with PassMan from the terminal, give it a password and it encrypts it with GPG and gets stored locally safely in your computer, you decrypt it with your GPG passphrase, simple enough right?
 
+You can install **PassMan** by running:
+`pip install python-passman`
+
 ## Dependencies:
-You can install the dependencies by running `pip install -r requirements.txt`
 - [python-gnupg](https://docs.red-dove.com/python-gnupg/) - interacting with GnuPG
 - [typer](https://typer.tiangolo.com/) - used for the command-line interface
 
 ## Usage:
-Start by initializing the passman vault by running `py passman.py init [gpg key ID]`
+Start by initializing the passman vault by running `passman init [gpg key ID]`
 ```
-PS C:\Users\Marcus> > py passman.py init [gpg key ID]
-Vault initialized for [gpg key ID], it can be found C\Users\Marcus\.passman
+passman init [ID]
+Vault initialized for [ID], it can be found at [path]
 ```
 
-And you are set in using passman! Run `py passman.py --help` for information 
+And you are set in using passman! Run `passman --help` for information 
 about the commands you can use!
 
 
 ## To-Do:
 - [ ] Using vim or nano when editing
-- [ ] Prettify interface
-- [ ] Make it a package
+- [x] Make it a package
+- [x] Prettify interface
 - [x] 'List' cmd shows nested folders/files
 - [x] Add metadata support
 - [x] Add folder support for entries

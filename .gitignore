@@ -1,2 +1,6 @@
 .venv
+.build
+build
+dist
+python_passman.egg-info
 __pycache__
